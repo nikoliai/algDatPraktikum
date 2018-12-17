@@ -18,11 +18,13 @@ template<class T, class E = char>
 class Trie {
 
 private:
-	InnerNode root; // attribut der klasse trie
+	typename Trie<T>::InnerNode root; // attribut der klasse trie
 public:
 	typedef basic_string<E> key_type;           // string=basic_string<char>
 	typedef pair<const key_type, T> value_type;
 	typedef T mapped_type;
+
+	int mainFun();
 
 	class Node {
 		//Node* parentNode_ptr;
@@ -54,54 +56,56 @@ public:
 		mapped_type my_value;
 
 	public:
-		LeafNode(Node* parentNode, T value, key_type key) :
-				Node(parentNode, key) {
+		LeafNode(T value, key_type key) :
+				Node(key) {
 			this->my_value = value;
 		}
+
 		void print() {
 			//;printet das gemappte value und den key
 			//std::cout << this->my_value << std::endl; key drucken
-			std::cout << this->my_value << std::endl;
+			std::cout << this->getKey() << ":" << this->my_value << std::endl;
 		}
-		void print() {
-			Node* n = this;
-			std::list<Node*> visited; //speichert alle buchstaben
-			while (n->hasParent()) {
-				visited.push_front(n);
-				n = n->getParentNode();
-			}
-			typename std::list<Node*>::iterator it;
-			int spaces = 0;
-			for (it = visited.begin(); it != visited.end(); ++it) {
-				for (int i = 0; i < spaces; ++i) {
-					std::cout << ' ';
-				}
-				spaces += 2;
-				std::cout << (*it)->getKey() << std::endl;
-			}
-			for (int i = 0; i < spaces; ++i) {
-				std::cout << ' ';
-			}
 
-			std::cout << this->my_value << std::endl;
-		}
+//		void print() {
+//			Node* n = this;
+//			std::list<Node*> visited; //speichert alle buchstaben
+//			while (n->hasParent()) {
+//				visited.push_front(n);
+//				n = n->getParentNode();
+//			}
+//			typename std::list<Node*>::iterator it;
+//			int spaces = 0;
+//			for (it = visited.begin(); it != visited.end(); ++it) {
+//				for (int i = 0; i < spaces; ++i) {
+//					std::cout << ' ';
+//				}
+//				spaces += 2;
+//				std::cout << (*it)->getKey() << std::endl;
+//			}
+//			for (int i = 0; i < spaces; ++i) {
+//				std::cout << ' ';
+//			}
+//
+//			std::cout << this->my_value << std::endl;
+//		}
 	};
 
 	class InnerNode: Node {
 	private:
-		std::list<Node*> children;//Stattedssen map E-Typ-pointer
+		std::map<E, Node*> childrenMap;
+
 		void print() {
-			// inneren knoten erstellen
+			cout << this->getKey();
 		}
 	public:
-		InnerNode(Node* parentNode, std::list<Node*> children, key_type key) :
-				Node(parentNode, key) {
-			this->children = children;
+		InnerNode(std::map<E, Node*> children, key_type key) :
+				Node(key) {
+			this->childrenMap = children;
 		}
 
-		void addChild(Node* child) {
-			this->children.push_back(child);
-			this->children.sort();
+		std::map<E, Node*> getChildrenMap() {
+			return childrenMap;
 		}
 
 	};
@@ -111,13 +115,44 @@ public:
 	//typedef ... iterator;
 //	  bool empty() const;
 
+	void insert(const value_type& value) {
+		key_type key = value.first;
+		T data = value.second;
+		const char* letter = key.c_str();
+		insertNode(letter, root, value);
+		// rekursiv: vom ende her anfangen,
+	}
+	;
 
-	void insert(const value_type& value);// rekursiv: vom ende her anfangen,
+	void insertNode(char* nextChar, InnerNode node, T val) {
+		node.print();
+		Node nextNode;
+		if (nextChar != NULL) {
+			if (node.getChildrenMap().find(*nextChar)
+					!= node.getChildrenMap().end()) {
+				//letter exists in the map
+				nextNode = node.getChildrenMap().find(*nextChar);
+			} else {
+				//letter doesnt exist in the map, need to create
+				std::map<E, Node*> map;
+				key_type key;
+				nextNode = new InnerNode(map, key);
+				map.insert(*nextChar, &nextNode);
+			}
+			insertNode(nextChar + 1, nextNode);
+		} else {
+			nextNode = new LeafNode(val, '\0');
+			node.getChildrenMap().insert('\0', &nextNode);
+			node.print();
+		}
+	}
+
 	//knoten erstellen,pointer setzen, dann pointer weitergeben(?); zwischendurch überprüfen:
 	//1) ob der node schon existiert, also ob man verzweigen muss
-	void print();//wir gehen alle knoten durch und schauen, wie denau das geprintet werden soll.
-
-
+	void print() {
+		;//wir gehen alle knoten durch und schauen, wie denau das geprintet werden soll.
+	}
+	;
 
 //	  void erase(const key_type& value);
 //	  void clear();  // erase all
@@ -134,6 +169,16 @@ public:
 	virtual ~Trie() {
 	}
 	;
+
 };
+
+int main() {
+	typedef basic_string<char> key_type;           // string=basic_string<char>
+	typedef string mapped_type;
+//	Trie<string> t;
+	pair<key_type, mapped_type> value("w", "we");
+//	t.insert(value);
+	return 0;
+}
 
 #endif /* TRIE_H_ */
