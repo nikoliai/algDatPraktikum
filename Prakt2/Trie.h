@@ -35,6 +35,7 @@ public:
 			//this->parentNode_ptr = parentNode;
 			this->key = key;
 		}
+		virtual bool isInnerNode();
 		~Node() {
 		}
 		;
@@ -66,29 +67,11 @@ public:
 			//std::cout << this->my_value << std::endl; key drucken
 			std::cout << this->getKey() << ":" << this->my_value << std::endl;
 		}
+		bool  isInnerNode() {
+				return false;
+			}
 
-//		void print() {
-//			Node* n = this;
-//			std::list<Node*> visited; //speichert alle buchstaben
-//			while (n->hasParent()) {
-//				visited.push_front(n);
-//				n = n->getParentNode();
-//			}
-//			typename std::list<Node*>::iterator it;
-//			int spaces = 0;
-//			for (it = visited.begin(); it != visited.end(); ++it) {
-//				for (int i = 0; i < spaces; ++i) {
-//					std::cout << ' ';
-//				}
-//				spaces += 2;
-//				std::cout << (*it)->getKey() << std::endl;
-//			}
-//			for (int i = 0; i < spaces; ++i) {
-//				std::cout << ' ';
-//			}
-//
-//			std::cout << this->my_value << std::endl;
-//		}
+
 	};
 
 	class InnerNode: Node {
@@ -97,6 +80,10 @@ public:
 
 		void print() {
 			cout << this->getKey();
+		}
+
+		bool  isInnerNode() {
+			return true;
 		}
 	public:
 		InnerNode(std::map<E, Node*> children, key_type key) :
@@ -149,15 +136,29 @@ public:
 
 	//knoten erstellen,pointer setzen, dann pointer weitergeben(?); zwischendurch überprüfen:
 	//1) ob der node schon existiert, also ob man verzweigen muss
-	void print() {
-		;//wir gehen alle knoten durch und schauen, wie denau das geprintet werden soll.
+	void print(Node* node) {
+		node->print();
+	if (isInnerNode()){
+		std::map<E, Node*> children = node.getChildrenMap();
+		if (children == NULL) {
+			return;
+		}
+			else{
+			for (auto i = children.begin(); i != children.end();i++	) {
+					 print (i->first );
+
+				}
+			}
+		}
+
+		//wir gehen alle knoten durch und schauen, wie denau das geprintet werden soll.
 	}
 	;
 
 //	  void erase(const key_type& value);
 //	  void clear();  // erase all
-	//iterator lower_bound(const key_type& testElement);  // first element >= testElement
-	//iterator upper_bound(const key_type& testElement);  // first element  >  testElement
+//iterator lower_bound(const key_type& testElement);  // first element >= testElement
+//iterator upper_bound(const key_type& testElement);  // first element  >  testElement
 //	  iterator find(const key_type& testElement);    // first element == testElement
 //	  iterator begin();  // returns end() if not found
 //	  iterator end();
@@ -180,5 +181,28 @@ int main() {
 //	t.insert(value);
 	return 0;
 }
+
+//		void print() {
+//			Node* n = this;
+//			std::list<Node*> visited; //speichert alle buchstaben
+//			while (n->hasParent()) {
+//				visited.push_front(n);
+//				n = n->getParentNode();
+//			}
+//			typename std::list<Node*>::iterator it;
+//			int spaces = 0;
+//			for (it = visited.begin(); it != visited.end(); ++it) {
+//				for (int i = 0; i < spaces; ++i) {
+//					std::cout << ' ';
+//				}
+//				spaces += 2;
+//				std::cout << (*it)->getKey() << std::endl;
+//			}
+//			for (int i = 0; i < spaces; ++i) {
+//				std::cout << ' ';
+//			}
+//
+//			std::cout << this->my_value << std::endl;
+//		}
 
 #endif /* TRIE_H_ */
