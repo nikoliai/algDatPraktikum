@@ -22,28 +22,51 @@ public:
 	typedef basic_string<E> key_type;           // string=basic_string<char>
 	typedef pair<const key_type, T> value_type;
 	typedef T mapped_type;
+private:
+	static int& cnt() {
+		static int counter = 0;
+		return counter;
+	}
 
+public:
+	// The setter uses the fact that val()
+	// returns a non-const reference,
+	// so we can assign to it.
+	static void set_cnt(const int _c) {
+		cnt() = _c;
+	}
 
+	// A true getter.
+	// Returns const int&, so we cannot assign to it.
+	static const int& get_cnt() {
+		return cnt();
+	}
 
 	class Node {
 	public:
 		virtual void print() = 0;
-
 	};
 
-	class LeafNode:public  Node {
+	class LeafNode: public Node {
 		typedef T mapped_type;
 
 	private:
 		mapped_type my_value;
 	public:
 		void print() {
-			std::cout << this->my_value << std::endl;
+
+			for (int j = 0; j < get_cnt(); ++j) {
+				cout << ' ';
+			}
+			cout << ':';
+			cout << this->my_value << endl;
+			cout << endl;
+			set_cnt(0);
 		}
 		bool isInnerNode() {
 			return false;
 		}
-		void setValue (mapped_type value){
+		void setValue(mapped_type value) {
 			this->my_value = value;
 		}
 	};
@@ -58,10 +81,11 @@ public:
 		}
 
 		void insertNode(key_type& word, const T &val) { //key_type basic_string
-			if (word.length() == 0){
+			if (word.length() == 0) {
 				LeafNode* leaf = new LeafNode();
-							leaf->setValue(val);
-							childrenMap.insert(std::make_pair( '\0', static_cast  <Node*>(leaf)));
+				leaf->setValue(val);
+				childrenMap.insert(
+						std::make_pair('\0', static_cast<Node*>(leaf)));
 				return;
 			}
 			E letter = word.at(0);
@@ -70,87 +94,87 @@ public:
 			if (newNode == childrenMap.end()) { //letter doesnt exist in the map, need to create
 				node = new InnerNode();
 				childrenMap.insert(std::make_pair(letter, node));
-			}else {
-				 node= static_cast <InnerNode*>((*newNode).second);
+			} else {
+				node = static_cast<InnerNode*>((*newNode).second);
 			}
-			if (word.length() != 0) {// länge anfragen (basic sting leer?)
-				key_type temp = word.substr(1, word.length()-1);
+			if (word.length() != 0) { // länge anfragen (basic sting leer?)
+				key_type temp = word.substr(1, word.length() - 1);
 				word = temp;
 				node->insertNode(word, val);
 			}
-
-
 		}
 
 		void print() {
 
 			for (auto i = childrenMap.begin(); i != childrenMap.end(); i++) {
-				cout << i->first << endl;
+
+				if (i->first != '\0') {
+					for (int j = 0; j < get_cnt(); ++j) {
+						cout << ' ';
+					}
+					int cnt = get_cnt() + 1;
+					set_cnt(cnt);
+
+					cout << i->first << endl;
+				}else{
+					cout << ' ';
+				}
 
 				i->second->print();
 			}
 		}
 	};
 
-// „...“ im folgenden typedef: keine C/C++ Ellipse, sondern von Ihnen
-// - am besten als innere Klasse - zu entwickeln…
-//typedef ... iterator;
 //	  bool empty() const;
 
-	class TrieIterator{
-typedef TrieIterator iterator;
-public:
-			value_type& operator *() {
+	class TrieIterator {
+		typedef TrieIterator iterator;
+	public:
+		value_type& operator *() {
+		}
+		;
+		iterator& operator =(const iterator& rhs) {
+
+		}
+		;
+		bool operator !=(const iterator& rhs) const {
+		}
+		;
+		bool operator ==(const iterator& rhs) const {
+		}
+		;
+		iterator& operator ++() {
+
+		}
+		;
+		iterator operator ++(int) {
+
+		}
+		;
+
+		std::stack<typename map<E, Node*>::iterator> my_stack;
+		std::stack<typename map<E, Node*>::iterator> my_end;
+
+		void slideLeft(InnerNode* node) {
+			auto it = node->childrenMap.begin();
+			auto itEnd = node->childrenMap.end();
+			while (it != itEnd) {
+				my_stack.push(it);//i
+				my_end.push(itEnd);//0x55678
+				if (it->first == '\0') {
+					node = static_cast<LeafNode*>(it->second);
+					return;
 				}
-				;
-				iterator& operator =(const iterator& rhs) {
-
-				}
-				;
-				bool operator !=(const iterator& rhs) const {
-				}
-				;
-				bool operator ==(const iterator& rhs) const {
-				}
-				;
-				iterator& operator ++() {
-
-				}
-				;
-				iterator operator ++(int) {
-
-				}
-				;
-
-	std::stack< typename map<E, Node*> :: iterator> my_stack;
-	std::stack< typename map<E, Node*> :: iterator> my_end;
-
-	void slideLeft(InnerNode* node){
-		// bei der wurzel anfangen
-		//->push_stack (iterator)
-		auto it = node ->childrenMap.begin();
-		auto itEnd = node ->childrenMap.end();
-
-		//
-while (it != itEnd){
-			my_stack.push(it);
-		my_end.push(itEnd);
-		if (it->first == '\0'){
-			return;
-					}
-		node = static_cast <InnerNode*>(it->second);
-		 it = node ->childrenMap.begin();
-			 itEnd = node ->childrenMap.end();
-}
-
-	}
+				node = static_cast<InnerNode*>(it->second);//inner node with i
+				it = node->childrenMap.begin();//pointer <char, Node*> r, node with r
+				itEnd = node->childrenMap.end();//0x4556
+			}
+		}
 
 	};
 	typedef TrieIterator iterator;
 
-
 	void print() {
-
 		root.print();
 	}
 
@@ -159,9 +183,12 @@ while (it != itEnd){
 //iterator lower_bound(const key_type& testElement);  // first element >= testElement
 //iterator upper_bound(const key_type& testElement);  // first element  >  testElement
 //	  iterator find(const key_type& testElement);    // first element == testElement
- iterator begin(){};  // returns end() if not found
- iterator end(){};
-//
+	iterator begin() {
+	}
+	;  // returns end() if not found
+	iterator end() {
+	}
+	;
 
 	Trie() {
 	}
@@ -182,9 +209,7 @@ public:
 	}
 	;
 
-
-
-	void iterate(){
+	void iterate() {
 		//sildeLeft;
 		//++
 		// treeIterator;
@@ -199,36 +224,34 @@ public:
 		//ja->1-3 wiederholen
 		//das ganze solange bis der iterator auf die wurzel zeigt
 
-
 	}
-
 
 };
 
-int main() {
+int main() {		//SPAETER IN EIGENE KLASSE AUSLAGERN
 	typedef char key_type;           // string=basic_string<char>
 	typedef string mapped_type;
 	Trie<string, key_type>* t = new Trie<string, key_type>();
 	basic_string<char> key("wir");
 	key.push_back('\0');
 	string s("we");
-	const pair<const basic_string<char>, mapped_type> value = std::make_pair(key, s);
+	const pair<const basic_string<char>, mapped_type> value = std::make_pair(
+			key, s);
 	t->insert(value);
 	// typedef pair<const key_type, T> value_type;
 
-	basic_string<char> key2("wiriii");
-		key2.push_back('\0');
-		string s2("we");
-		const pair<const basic_string<char>, mapped_type> value2 = std::make_pair(key2, s2);
-		t->insert(value2);
+	basic_string<char> key2("we");
+	key2.push_back('\0');
+	string s2("bla");
+	const pair<const basic_string<char>, mapped_type> value2 = std::make_pair(
+			key2, s2);
+	t->insert(value2);
 	t->print();
-	for (auto it = t->begin(); it != t->end(); ++it){//
+	for (auto it = t->begin(); it != t->end(); ++it) {           //
 		cout << (*it).first << "" << (*it).second;
 	}
 	return 0;
 }
-
-
 
 //		void print() {
 //			Node* n = this;
