@@ -8,6 +8,7 @@
 #include <list>
 #include <map>
 #include <iostream>
+#include <unistd.h>
 #include <stack>
 
 #ifndef TRIE_H_
@@ -69,6 +70,9 @@ public:
 		void setValue(mapped_type value) {
 			this->my_value = value;
 		}
+		mapped_type getValue() {
+			return this->my_value;
+		}
 	};
 
 	class InnerNode: public Node {
@@ -76,24 +80,25 @@ public:
 		std::map<E, Node*> childrenMap;
 
 	public:
-		std::map<E, Node*> getChildrenMap() {
-			return childrenMap;
+		std::map<E, Node*>* getChildrenMap() {
+			return &(this->childrenMap);
 		}
 
 		void insertNode(key_type& word, const T &val) { //key_type basic_string
 			if (word.length() == 0) {
 				LeafNode* leaf = new LeafNode();
 				leaf->setValue(val);
-				childrenMap.insert(
+				this->childrenMap.insert(
 						std::make_pair('\0', static_cast<Node*>(leaf)));
 				return;
 			}
 			E letter = word.at(0);
 			InnerNode* node;
-			auto newNode = childrenMap.find(letter);
-			if (newNode == childrenMap.end()) { //letter doesnt exist in the map, need to create
+			typename std::map<E, Node*>::iterator newNode =
+					this->childrenMap.find(letter);
+			if (newNode == this->childrenMap.end()) { //letter doesnt exist in the map, need to create
 				node = new InnerNode();
-				childrenMap.insert(std::make_pair(letter, node));
+				this->childrenMap.insert(std::make_pair(letter, node));
 			} else {
 				node = static_cast<InnerNode*>((*newNode).second);
 			}
@@ -105,7 +110,6 @@ public:
 		}
 
 		void print() {
-
 			for (auto i = childrenMap.begin(); i != childrenMap.end(); i++) {
 
 				if (i->first != '\0') {
@@ -116,7 +120,7 @@ public:
 					set_cnt(cnt);
 
 					cout << i->first << endl;
-				}else{
+				} else {
 					cout << ' ';
 				}
 
@@ -125,50 +129,93 @@ public:
 		}
 	};
 
-//	  bool empty() const;
-
 	class TrieIterator {
 		typedef TrieIterator iterator;
+		LeafNode* leafNode;
 	public:
-		value_type& operator *() {
+		TrieIterator(InnerNode* node) {
+//			cout << "in constructor" << endl;
+			if (node != NULL) {
+				leafNode = static_cast<LeafNode*>(slideLeft(node));
+			} else {
+				leafNode = NULL;
+			}
 		}
 		;
-		iterator& operator =(const iterator& rhs) {
 
+		LeafNode& operator *() {
+			return *leafNode;
 		}
 		;
+//		iterator& operator =(const iterator& rhs) {
+//		}
+//		;
 		bool operator !=(const iterator& rhs) const {
+			return (this->leafNode != rhs.leafNode);
 		}
 		;
 		bool operator ==(const iterator& rhs) const {
+			return (this->leafNode == rhs.leafNode);
 		}
 		;
 		iterator& operator ++() {
-
+			typename std::map<E, Node*>::iterator it = my_stack.top();
+			typename std::map<E, Node*>::iterator itEnd = my_end.top();
+			it++;
+			while (it == itEnd) {
+				my_stack.pop();
+				my_end.pop();
+//				cout << "while"<< my_stack.size() << endl;
+				if (!my_stack.empty()) {
+					it = my_stack.top();
+					itEnd = my_end.top();
+					//cout << it->first << " " << my_stack.size() << endl;
+					it++;
+				} else {
+//					cout << "trying to create constr for null node" << endl;
+					leafNode = NULL;
+//					cout << "finished cnstr"<< endl;
+					return *this; //points at the trie end
+				}
+			}
+			my_stack.pop();
+			my_end.pop();
+			my_stack.push(it);
+			my_end.push(itEnd);
+			InnerNode* in = static_cast<InnerNode*>(it->second);
+//			TrieIterator* newIt = new TrieIterator(in);
+			leafNode = slideLeft(in);
+//			(*(*newIt)).print();
+			return *this;
 		}
 		;
 		iterator operator ++(int) {
-
+			return operator ++();
 		}
 		;
 
 		std::stack<typename map<E, Node*>::iterator> my_stack;
 		std::stack<typename map<E, Node*>::iterator> my_end;
 
-		void slideLeft(InnerNode* node) {
-			auto it = node->childrenMap.begin();
-			auto itEnd = node->childrenMap.end();
+		LeafNode* slideLeft(InnerNode* node) {
+			LeafNode* ret = NULL;
+			typename std::map<E, Node*>::iterator it =
+					node->getChildrenMap()->begin(); //childrenMap.begin();
+			typename std::map<E, Node*>::iterator itEnd =
+					node->getChildrenMap()->end();
 			while (it != itEnd) {
-				my_stack.push(it);//i
-				my_end.push(itEnd);//0x55678
+				my_stack.push(it);
+//				cout << "letter to be pushed " << it->first << " " <<  endl;
+				my_end.push(itEnd);
 				if (it->first == '\0') {
-					node = static_cast<LeafNode*>(it->second);
-					return;
+					LeafNode* ret = static_cast<LeafNode*>(it->second);
+					return ret;
 				}
-				node = static_cast<InnerNode*>(it->second);//inner node with i
-				it = node->childrenMap.begin();//pointer <char, Node*> r, node with r
-				itEnd = node->childrenMap.end();//0x4556
+				node = static_cast<InnerNode*>(it->second);
+				it = node->getChildrenMap()->begin();
+				itEnd = node->getChildrenMap()->end();
 			}
+			return ret;
 		}
 
 	};
@@ -183,16 +230,22 @@ public:
 //iterator lower_bound(const key_type& testElement);  // first element >= testElement
 //iterator upper_bound(const key_type& testElement);  // first element  >  testElement
 //	  iterator find(const key_type& testElement);    // first element == testElement
+
 	iterator begin() {
+		iterator* it = new TrieIterator(&root);
+		return *it;
 	}
 	;  // returns end() if not found
 	iterator end() {
+		iterator* it = new TrieIterator(NULL);
+		return *it;
 	}
 	;
 
 	Trie() {
 	}
 	;
+
 	virtual ~Trie() {
 	}
 	;
@@ -208,6 +261,10 @@ public:
 		root.insertNode(key, data);
 	}
 	;
+
+	InnerNode* getRoot() {
+		return &root;
+	}
 
 	void iterate() {
 		//sildeLeft;
@@ -227,31 +284,6 @@ public:
 	}
 
 };
-
-int main() {		//SPAETER IN EIGENE KLASSE AUSLAGERN
-	typedef char key_type;           // string=basic_string<char>
-	typedef string mapped_type;
-	Trie<string, key_type>* t = new Trie<string, key_type>();
-	basic_string<char> key("wir");
-	key.push_back('\0');
-	string s("we");
-	const pair<const basic_string<char>, mapped_type> value = std::make_pair(
-			key, s);
-	t->insert(value);
-	// typedef pair<const key_type, T> value_type;
-
-	basic_string<char> key2("we");
-	key2.push_back('\0');
-	string s2("bla");
-	const pair<const basic_string<char>, mapped_type> value2 = std::make_pair(
-			key2, s2);
-	t->insert(value2);
-	t->print();
-	for (auto it = t->begin(); it != t->end(); ++it) {           //
-		cout << (*it).first << "" << (*it).second;
-	}
-	return 0;
-}
 
 //		void print() {
 //			Node* n = this;
