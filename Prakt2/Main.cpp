@@ -59,5 +59,15 @@ int main() {
 	for (auto it = t->begin(); it != t->end(); ++it) {           //
 		(*it).print();
 	}
+
+	auto it = t->find(key);
+	cout << "from main " << endl;
+	(*it).print();
+	t->find(key6);
+	basic_string<char> key7("we");
+	key7.push_back('\0');
+	if (t->find(key7) == t->end()){
+		cout << "passt";
+	}
 	return 0;
 }

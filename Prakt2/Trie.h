@@ -8,8 +8,8 @@
 #include <list>
 #include <map>
 #include <iostream>
-#include <unistd.h>
 #include <stack>
+#include <string.h>
 
 #ifndef TRIE_H_
 #define TRIE_H_
@@ -64,9 +64,7 @@ public:
 			cout << endl;
 			set_cnt(0);
 		}
-		bool isInnerNode() {
-			return false;
-		}
+
 		void setValue(mapped_type value) {
 			this->my_value = value;
 		}
@@ -142,14 +140,18 @@ public:
 			}
 		}
 		;
-
+		TrieIterator(LeafNode* node) {
+			leafNode = node;
+		}
+		;
 		LeafNode& operator *() {
 			return *leafNode;
 		}
 		;
-//		iterator& operator =(const iterator& rhs) {
-//		}
-//		;
+		iterator& operator =(const iterator& rhs) {
+			return (this->leafNode = rhs.leafNode);
+		}
+		;
 		bool operator !=(const iterator& rhs) const {
 			return (this->leafNode != rhs.leafNode);
 		}
@@ -224,12 +226,57 @@ public:
 	void print() {
 		root.print();
 	}
-
+	bool empty() const {
+		return this->root.childrenMap.empty();
+	}
+//	  iterator insert(const value_type& value);
 //	  void erase(const key_type& value); next step
 //	  void clear();  // erase all
 //iterator lower_bound(const key_type& testElement);  // first element >= testElement
 //iterator upper_bound(const key_type& testElement);  // first element  >  testElement
-//	  iterator find(const key_type& testElement);    // first element == testElement
+	iterator find(const key_type& testElement) { // first element == testElement
+		return findHelper(testElement, &root);
+//		  			InnerNode* node;
+//		  			typename std::map<E, Node*>::iterator newNode =
+//		  					this->childrenMap.find(letter);
+//		  			if (newNode == this->childrenMap.end()) { //letter doesnt exist in the map, need to create
+//		  				node = new InnerNode();
+//		  				this->childrenMap.insert(std::make_pair(letter, node));
+//		  			} else {
+//		  				node = static_cast<InnerNode*>((*newNode).second);
+//		  			}
+//		  			if (word.length() != 0) { // länge anfragen (basic sting leer?)
+//		  				key_type temp = word.substr(1, word.length() - 1);
+//		  				word = temp;
+//		  				node->insertNode(word, val);
+//		  			}
+	}
+	iterator findHelper(const key_type& testElement, InnerNode* node) {
+//		char* w = (char*)testElement.c_str();
+//		key_type word = strcat(w, (char*)'\0');
+//		word.append();
+		Node* retNode;
+		E letter = testElement.at(0);
+		typename std::map<E, Node*>::iterator newNode =
+				node->getChildrenMap()->find(letter);
+		if (newNode == node->getChildrenMap()->end()) {
+			return end();
+		} else {
+			key_type temp = testElement.substr(1, testElement.length() - 1);
+			cout << temp << endl;
+			if (temp.length() == 0) {
+//				cout << "trying to show leafNode" << endl;
+				retNode = static_cast<LeafNode*>(newNode->second);
+				cout << "the node is: ";
+				retNode->print();
+
+			} else {
+				InnerNode* in = static_cast<InnerNode*>(newNode->second);
+				return findHelper(temp, in);
+			}
+		}
+		return *(new TrieIterator(static_cast<LeafNode*>(retNode)));
+	}
 
 	iterator begin() {
 		iterator* it = new TrieIterator(&root);
@@ -237,7 +284,7 @@ public:
 	}
 	;  // returns end() if not found
 	iterator end() {
-		iterator* it = new TrieIterator(NULL);
+		iterator* it = new TrieIterator((InnerNode*) NULL);
 		return *it;
 	}
 	;
