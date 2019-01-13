@@ -10,6 +10,7 @@
 #include <iostream>
 #include <stack>
 #include <string.h>
+#include <list>
 
 #ifndef TRIE_H_
 #define TRIE_H_
@@ -129,23 +130,54 @@ public:
 
 	class TrieIterator {
 		typedef TrieIterator iterator;
+		typedef std::pair<key_type, LeafNode*> return_t;
 		LeafNode* leafNode;
+		key_type key;
 	public:
-		TrieIterator(InnerNode* node) {
-//			cout << "in constructor" << endl;
-			if (node != NULL) {
-				leafNode = static_cast<LeafNode*>(slideLeft(node));
+//		TrieIterator(InnerNode* node) {
+////			cout << "in constructor" << endl;
+//			if (node != NULL) {
+//				leafNode = static_cast<LeafNode*>(slideLeft(node));
+//			} else {
+//				leafNode = NULL;
+//			}
+//		}
+//		;
+//		TrieIterator(LeafNode* node) {
+//			leafNode = node;
+//		}
+//		;
+
+		TrieIterator(InnerNode* in) :
+				leafNode(NULL) {
+			setPair(in);
+		}
+		;
+
+		void setPair(InnerNode* in) {
+			key = "";
+			if (in != NULL) {
+				leafNode = slideLeft(in);
+				while (!my_stack.empty()) {
+					my_list.push_front(my_stack.top());
+					key = my_stack.top()->first + key;
+//					cout << "setPair pop: " << my_stack.top()->first << endl;
+					my_stack.pop();
+				}
+				while (!my_list.empty()) {
+//					cout << "queue: " << my_list.front()->first << endl;
+					my_stack.push(my_list.front());
+					my_list.pop_front();
+				}
 			} else {
 				leafNode = NULL;
 			}
 		}
 		;
-		TrieIterator(LeafNode* node) {
-			leafNode = node;
-		}
-		;
-		LeafNode& operator *() {
-			return *leafNode;
+
+		return_t operator *() {
+//			return *leafNode;
+			return return_t(key, leafNode);
 		}
 		;
 		iterator& operator =(const iterator& rhs) {
@@ -165,6 +197,7 @@ public:
 			typename std::map<E, Node*>::iterator itEnd = my_end.top();
 			it++;
 			while (it == itEnd) {
+//				cout << "op++ pop: " << my_stack.top()->first << endl;
 				my_stack.pop();
 				my_end.pop();
 //				cout << "while"<< my_stack.size() << endl;
@@ -180,13 +213,16 @@ public:
 					return *this; //points at the trie end
 				}
 			}
+//			cout << "op++ pop: " << my_stack.top()->first << endl;
 			my_stack.pop();
 			my_end.pop();
+//			cout << "op++ push: " << it->first << endl;
 			my_stack.push(it);
 			my_end.push(itEnd);
 			InnerNode* in = static_cast<InnerNode*>(it->second);
 //			TrieIterator* newIt = new TrieIterator(in);
-			leafNode = slideLeft(in);
+//			leafNode = slideLeft(in);
+			setPair(in);
 //			(*(*newIt)).print();
 			return *this;
 		}
@@ -196,6 +232,7 @@ public:
 		}
 		;
 
+		std::list<typename map<E, Node*>::iterator> my_list;
 		std::stack<typename map<E, Node*>::iterator> my_stack;
 		std::stack<typename map<E, Node*>::iterator> my_end;
 
@@ -206,6 +243,7 @@ public:
 			typename std::map<E, Node*>::iterator itEnd =
 					node->getChildrenMap()->end();
 			while (it != itEnd) {
+//				cout << "sl push: " << it->first << endl;
 				my_stack.push(it);
 //				cout << "letter to be pushed " << it->first << " " <<  endl;
 				my_end.push(itEnd);
@@ -232,10 +270,22 @@ public:
 //	  iterator insert(const value_type& value);
 //	  void erase(const key_type& value); next step
 //	  void clear();  // erase all
-//iterator lower_bound(const key_type& testElement);  // first element >= testElement
-//iterator upper_bound(const key_type& testElement);  // first element  >  testElement
-	iterator find(const key_type& testElement) { // first element == testElement
-		return findHelper(testElement, &root);
+////iterator lower_bound(const key_type& testElement);  // first element >= testElement
+////iterator upper_bound(const key_type& testElement);  // first element  >  testElement
+//	iterator find(const key_type& testElement) { // first element == testElement
+	iterator find(const key_type& testElement) {
+		iterator it = this->begin();
+		while (it != this->end()) {
+//			cout << "find() it.first >> " << (*it).first
+//					<< "find() it.second >> " << (*it).second << endl;
+			if ((*it).first == testElement) {
+//				cout << "bang" << endl;
+				return it;
+			}
+			it++;
+		}
+		return it;
+	}
 //		  			InnerNode* node;
 //		  			typename std::map<E, Node*>::iterator newNode =
 //		  					this->childrenMap.find(letter);
@@ -250,39 +300,40 @@ public:
 //		  				word = temp;
 //		  				node->insertNode(word, val);
 //		  			}
-	}
-	iterator findHelper(const key_type& testElement, InnerNode* node) {
-//		char* w = (char*)testElement.c_str();
-//		key_type word = strcat(w, (char*)'\0');
-//		word.append();
-		Node* retNode;
-		E letter = testElement.at(0);
-		typename std::map<E, Node*>::iterator newNode =
-				node->getChildrenMap()->find(letter);
-		if (newNode == node->getChildrenMap()->end()) {
-			return end();
-		} else {
-			key_type temp = testElement.substr(1, testElement.length() - 1);
-			cout << temp << endl;
-			if (temp.length() == 0) {
-//				cout << "trying to show leafNode" << endl;
-				retNode = static_cast<LeafNode*>(newNode->second);
-				cout << "the node is: ";
-				retNode->print();
-
-			} else {
-				InnerNode* in = static_cast<InnerNode*>(newNode->second);
-				return findHelper(temp, in);
-			}
-		}
-		return *(new TrieIterator(static_cast<LeafNode*>(retNode)));
-	}
+//}
+//	iterator findHelper(const key_type& testElement, InnerNode* node) {
+////		char* w = (char*)testElement.c_str();
+////		key_type word = strcat(w, (char*)'\0');
+////		word.append();
+//		Node* retNode;
+//		E letter = testElement.at(0);
+//		typename std::map<E, Node*>::iterator newNode =
+//				node->getChildrenMap()->find(letter);
+//		if (newNode == node->getChildrenMap()->end()) {
+//			return end();
+//		} else {
+//			key_type temp = testElement.substr(1, testElement.length() - 1);
+//			cout << temp << endl;
+//			if (temp.length() == 0) {
+////				cout << "trying to show leafNode" << endl;
+//				retNode = static_cast<LeafNode*>(newNode->second);
+//				cout << "the node is: ";
+//				retNode->print();
+//
+//			} else {
+//				InnerNode* in = static_cast<InnerNode*>(newNode->second);
+//				return findHelper(temp, in);
+//			}
+//		}
+//		return *(new TrieIterator(static_cast<LeafNode*>(retNode)));
+//	}
 
 	iterator begin() {
 		iterator* it = new TrieIterator(&root);
 		return *it;
 	}
-	;  // returns end() if not found
+	;
+// returns end() if not found
 	iterator end() {
 		iterator* it = new TrieIterator((InnerNode*) NULL);
 		return *it;
