@@ -57,14 +57,14 @@ int main() {
 
 	cout << "start iterator loop\n";
 	for (auto it = t->begin(); it != t->end(); ++it) {           //
-		(*it).second->print();
+		(*it).second->printNode(0);
 	}
 
 	auto it = t->find(key);
 	cout << "from main " << endl;
-	(*it).second->print();
+	(*it).second->printNode(0);
 	auto it2 = t->find(key6);
-	(*it2).second->print();
+	(*it2).second->printNode(0);
 
 	basic_string<char> key7("we");
 	key7.push_back('\0');

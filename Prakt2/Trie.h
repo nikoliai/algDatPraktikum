@@ -46,7 +46,7 @@ public:
 
 	class Node {
 	public:
-		virtual void print() = 0;
+		virtual void printNode(int cnt) = 0;
 	};
 
 	class LeafNode: public Node {
@@ -55,15 +55,16 @@ public:
 	private:
 		mapped_type my_value;
 	public:
-		void print() {
+		void printNode(int cnt) {
 
-			for (int j = 0; j < get_cnt(); ++j) {
+//			for (int j = 0; j < get_cnt(); ++j) {
+			for (int j = 0; j < cnt; ++j) {
 				cout << ' ';
 			}
 			cout << ':';
 			cout << this->my_value << endl;
 			cout << endl;
-			set_cnt(0);
+//			set_cnt(0);
 		}
 
 		void setValue(mapped_type value) {
@@ -108,22 +109,22 @@ public:
 			}
 		}
 
-		void print() {
+		void printNode(int cnt) {
 			for (auto i = childrenMap.begin(); i != childrenMap.end(); i++) {
 
 				if (i->first != '\0') {
-					for (int j = 0; j < get_cnt(); ++j) {
+//					for (int j = 0; j < get_cnt(); ++j) {
+					for (int j = 0; j < cnt; ++j) {
 						cout << ' ';
 					}
-					int cnt = get_cnt() + 1;
-					set_cnt(cnt);
-
+//					int cnt = get_cnt() + 1;
+//					set_cnt(cnt);
 					cout << i->first << endl;
-				} else {
-					cout << ' ';
 				}
-
-				i->second->print();
+//				else {
+//					cout << ' ';
+//				}
+				i->second->printNode(cnt+1);
 			}
 		}
 	};
@@ -262,7 +263,7 @@ public:
 	typedef TrieIterator iterator;
 
 	void print() {
-		root.print();
+		root.printNode(0);
 	}
 	bool empty() const {
 		return this->root.childrenMap.empty();
@@ -272,68 +273,23 @@ public:
 //	  void clear();  // erase all
 ////iterator lower_bound(const key_type& testElement);  // first element >= testElement
 ////iterator upper_bound(const key_type& testElement);  // first element  >  testElement
-//	iterator find(const key_type& testElement) { // first element == testElement
 	iterator find(const key_type& testElement) {
 		iterator it = this->begin();
 		while (it != this->end()) {
-//			cout << "find() it.first >> " << (*it).first
-//					<< "find() it.second >> " << (*it).second << endl;
 			if ((*it).first == testElement) {
-//				cout << "bang" << endl;
 				return it;
 			}
 			it++;
 		}
 		return it;
 	}
-//		  			InnerNode* node;
-//		  			typename std::map<E, Node*>::iterator newNode =
-//		  					this->childrenMap.find(letter);
-//		  			if (newNode == this->childrenMap.end()) { //letter doesnt exist in the map, need to create
-//		  				node = new InnerNode();
-//		  				this->childrenMap.insert(std::make_pair(letter, node));
-//		  			} else {
-//		  				node = static_cast<InnerNode*>((*newNode).second);
-//		  			}
-//		  			if (word.length() != 0) { // länge anfragen (basic sting leer?)
-//		  				key_type temp = word.substr(1, word.length() - 1);
-//		  				word = temp;
-//		  				node->insertNode(word, val);
-//		  			}
-//}
-//	iterator findHelper(const key_type& testElement, InnerNode* node) {
-////		char* w = (char*)testElement.c_str();
-////		key_type word = strcat(w, (char*)'\0');
-////		word.append();
-//		Node* retNode;
-//		E letter = testElement.at(0);
-//		typename std::map<E, Node*>::iterator newNode =
-//				node->getChildrenMap()->find(letter);
-//		if (newNode == node->getChildrenMap()->end()) {
-//			return end();
-//		} else {
-//			key_type temp = testElement.substr(1, testElement.length() - 1);
-//			cout << temp << endl;
-//			if (temp.length() == 0) {
-////				cout << "trying to show leafNode" << endl;
-//				retNode = static_cast<LeafNode*>(newNode->second);
-//				cout << "the node is: ";
-//				retNode->print();
-//
-//			} else {
-//				InnerNode* in = static_cast<InnerNode*>(newNode->second);
-//				return findHelper(temp, in);
-//			}
-//		}
-//		return *(new TrieIterator(static_cast<LeafNode*>(retNode)));
-//	}
 
 	iterator begin() {
 		iterator* it = new TrieIterator(&root);
 		return *it;
 	}
 	;
-// returns end() if not found
+
 	iterator end() {
 		iterator* it = new TrieIterator((InnerNode*) NULL);
 		return *it;
@@ -382,28 +338,5 @@ public:
 	}
 
 };
-
-//		void print() {
-//			Node* n = this;
-//			std::list<Node*> visited; //speichert alle buchstaben
-//			while (n->hasParent()) {
-//				visited.push_front(n);
-//				n = n->getParentNode();
-//			}
-//			typename std::list<Node*>::iterator it;
-//			int spaces = 0;
-//			for (it = visited.begin(); it != visited.end(); ++it) {
-//				for (int i = 0; i < spaces; ++i) {
-//					std::cout << ' ';
-//				}
-//				spaces += 2;
-//				std::cout << (*it)->getKey() << std::endl;
-//			}
-//			for (int i = 0; i < spaces; ++i) {
-//				std::cout << ' ';
-//			}
-//
-//			std::cout << this->my_value << std::endl;
-//		}
 
 #endif /* TRIE_H_ */
