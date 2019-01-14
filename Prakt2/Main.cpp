@@ -9,7 +9,9 @@ int main() {
 	string s("are");
 	const pair<const basic_string<char>, mapped_type> value = std::make_pair(
 			key, s);
-	t->insert(value);
+	auto iter = t->insert(value);
+	cout << "key " << (*iter).first << " " << "value " << endl;
+			(*iter).second->printNode(0);
 	// typedef pair<const key_type, T> value_type;
 
 	basic_string<char> key2("weiss");
@@ -47,6 +49,10 @@ int main() {
 			key6, s6);
 	t->insert(value6);
 
+//	t->print();
+
+	t->erase(key);
+	t->erase(key5);
 	t->print();
 
 //	auto it = t->begin();
@@ -68,7 +74,7 @@ int main() {
 
 	basic_string<char> key7("we");
 	key7.push_back('\0');
-	if (t->find(key7) == t->end()){
+	if (t->find(key7) == t->end()) {
 		cout << "passt";
 	}
 	return 0;

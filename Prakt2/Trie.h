@@ -31,18 +31,18 @@ private:
 	}
 
 public:
-	// The setter uses the fact that val()
-	// returns a non-const reference,
-	// so we can assign to it.
-	static void set_cnt(const int _c) {
-		cnt() = _c;
-	}
+//	// The setter uses the fact that val()
+//	// returns a non-const reference,
+//	// so we can assign to it.
+//	static void set_cnt(const int _c) {
+//		cnt() = _c;
+//	}
 
 	// A true getter.
 	// Returns const int&, so we cannot assign to it.
-	static const int& get_cnt() {
-		return cnt();
-	}
+//	static const int& get_cnt() {
+//		return cnt();
+//	}
 
 	class Node {
 	public:
@@ -84,13 +84,13 @@ public:
 			return &(this->childrenMap);
 		}
 
-		void insertNode(key_type& word, const T &val) { //key_type basic_string
+		LeafNode* insertNode(key_type& word, const T &val) { //key_type basic_string
+			LeafNode* leaf = new LeafNode();
 			if (word.length() == 0) {
-				LeafNode* leaf = new LeafNode();
 				leaf->setValue(val);
 				this->childrenMap.insert(
 						std::make_pair('\0', static_cast<Node*>(leaf)));
-				return;
+				return leaf;
 			}
 			E letter = word.at(0);
 			InnerNode* node;
@@ -105,8 +105,9 @@ public:
 			if (word.length() != 0) { // länge anfragen (basic sting leer?)
 				key_type temp = word.substr(1, word.length() - 1);
 				word = temp;
-				node->insertNode(word, val);
+				leaf = node->insertNode(word, val);
 			}
+			return leaf;
 		}
 
 		void printNode(int cnt) {
@@ -124,7 +125,7 @@ public:
 //				else {
 //					cout << ' ';
 //				}
-				i->second->printNode(cnt+1);
+				i->second->printNode(cnt + 1);
 			}
 		}
 	};
@@ -135,23 +136,15 @@ public:
 		LeafNode* leafNode;
 		key_type key;
 	public:
-//		TrieIterator(InnerNode* node) {
-////			cout << "in constructor" << endl;
-//			if (node != NULL) {
-//				leafNode = static_cast<LeafNode*>(slideLeft(node));
-//			} else {
-//				leafNode = NULL;
-//			}
-//		}
-//		;
-//		TrieIterator(LeafNode* node) {
-//			leafNode = node;
-//		}
-//		;
 
 		TrieIterator(InnerNode* in) :
 				leafNode(NULL) {
 			setPair(in);
+		}
+		;
+		TrieIterator(LeafNode* leaf, key_type input_key) {
+			leafNode = leaf;
+			key = input_key;
 		}
 		;
 
@@ -258,6 +251,10 @@ public:
 			}
 			return ret;
 		}
+		std::stack<typename map<E, Node*>::iterator> get_my_stack() {
+			return my_stack;
+
+		}
 
 	};
 	typedef TrieIterator iterator;
@@ -268,8 +265,30 @@ public:
 	bool empty() const {
 		return this->root.childrenMap.empty();
 	}
-//	  iterator insert(const value_type& value);
-//	  void erase(const key_type& value); next step
+	void erase(const key_type& value) {
+		iterator it_pair = find(value);
+		if (it_pair != this->end()) {
+			std::stack<typename map<E, Node*>::iterator> my_stack =
+					it_pair.get_my_stack();
+			E keyToDel = my_stack.top()->first;
+			my_stack.pop();
+			InnerNode* node = (InnerNode*) my_stack.top()->second;
+			while (my_stack.size() > 0) {
+				node->getChildrenMap()->erase(keyToDel);
+				if (node->getChildrenMap()->empty()) {
+					node = NULL;
+					keyToDel = my_stack.top()->first;
+					my_stack.pop();
+					if (!my_stack.empty()) {
+						node = (InnerNode*) my_stack.top()->second;
+					}
+				} else {
+					return;
+				}
+			}
+			root.getChildrenMap()->erase(keyToDel);
+		}
+	}
 //	  void clear();  // erase all
 ////iterator lower_bound(const key_type& testElement);  // first element >= testElement
 ////iterator upper_bound(const key_type& testElement);  // first element  >  testElement
@@ -309,10 +328,13 @@ private:
 public:
 
 public:
-	void insert(const value_type& value) {
+	iterator insert(const value_type& value) {
 		key_type key = value.first;
+		key_type keyToRet = key;
 		T data = value.second;
-		root.insertNode(key, data);
+		LeafNode* leaf = root.insertNode(key, data);
+		iterator* it = new iterator(leaf, keyToRet);
+		return *it;
 	}
 	;
 
