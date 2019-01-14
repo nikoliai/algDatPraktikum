@@ -168,33 +168,6 @@ int main() {
 
 	}
 
-//	t->print();
 
-//	t->erase(key);
-//	t->erase(key5);
-//	t->print();
-
-//	auto it = t->begin();
-//	(*it).print();
-//	++it;
-//	(*it).print();
-//	++it;
-
-//	cout << "start iterator loop\n";
-//	for (auto it = t->begin(); it != t->end(); ++it) {           //
-//		(*it).second->printNode(0);
-//	}
-//
-//	auto it = t->find(key);
-//	cout << "from main " << endl;
-//	(*it).second->printNode(0);
-//	auto it2 = t->find(key6);
-//	(*it2).second->printNode(0);
-//
-//	basic_string<char> key7("we");
-//	key7.push_back('\0');
-//	if (t->find(key7) == t->end()) {
-//		cout << "passt";
-//	}
 	return 0;
 }

@@ -2,7 +2,7 @@
  * Trie.h
  *
  *  Created on: 09.12.2018
- *      Author: Olenka
+ *      Author: Olga Nikoliai, Nicole Johnson
  */
 #include <string>
 #include <list>
@@ -155,11 +155,9 @@ public:
 				while (!my_stack.empty()) {
 					my_list.push_front(my_stack.top());
 					key = my_stack.top()->first + key;
-//					cout << "setPair pop: " << my_stack.top()->first << endl;
 					my_stack.pop();
 				}
 				while (!my_list.empty()) {
-//					cout << "queue: " << my_list.front()->first << endl;
 					my_stack.push(my_list.front());
 					my_list.pop_front();
 				}
@@ -170,7 +168,6 @@ public:
 		;
 
 		return_t operator *() {
-//			return *leafNode;
 			return return_t(key, leafNode);
 		}
 		;
@@ -191,33 +188,24 @@ public:
 			typename std::map<E, Node*>::iterator itEnd = my_end.top();
 			it++;
 			while (it == itEnd) {
-//				cout << "op++ pop: " << my_stack.top()->first << endl;
 				my_stack.pop();
 				my_end.pop();
-//				cout << "while"<< my_stack.size() << endl;
 				if (!my_stack.empty()) {
 					it = my_stack.top();
 					itEnd = my_end.top();
-					//cout << it->first << " " << my_stack.size() << endl;
 					it++;
 				} else {
-//					cout << "trying to create constr for null node" << endl;
 					leafNode = NULL;
-//					cout << "finished cnstr"<< endl;
 					return *this; //points at the trie end
 				}
 			}
-//			cout << "op++ pop: " << my_stack.top()->first << endl;
 			my_stack.pop();
 			my_end.pop();
-//			cout << "op++ push: " << it->first << endl;
 			my_stack.push(it);
 			my_end.push(itEnd);
 			InnerNode* in = static_cast<InnerNode*>(it->second);
-//			TrieIterator* newIt = new TrieIterator(in);
-//			leafNode = slideLeft(in);
+
 			setPair(in);
-//			(*(*newIt)).print();
 			return *this;
 		}
 		;
@@ -237,9 +225,7 @@ public:
 			typename std::map<E, Node*>::iterator itEnd =
 					node->getChildrenMap()->end();
 			while (it != itEnd) {
-//				cout << "sl push: " << it->first << endl;
 				my_stack.push(it);
-//				cout << "letter to be pushed " << it->first << " " <<  endl;
 				my_end.push(itEnd);
 				if (it->first == '\0') {
 					LeafNode* ret = static_cast<LeafNode*>(it->second);
@@ -309,9 +295,7 @@ public:
 		iterator it2 = it;
 		while (it != end()) {
 			it2++;
-//			cout << "bingooo " << (*it2).first << endl;
 			if (it2 != it) {
-//				cout << "bingo";
 				return it2;
 			}
 		}
