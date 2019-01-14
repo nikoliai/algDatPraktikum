@@ -262,9 +262,11 @@ public:
 	void print() {
 		root.printNode(0);
 	}
+	;
 	bool empty() const {
 		return this->root.childrenMap.empty();
 	}
+	;
 	void erase(const key_type& value) {
 		iterator it_pair = find(value);
 		if (it_pair != this->end()) {
@@ -289,9 +291,33 @@ public:
 			root.getChildrenMap()->erase(keyToDel);
 		}
 	}
-//	  void clear();  // erase all
-////iterator lower_bound(const key_type& testElement);  // first element >= testElement
-////iterator upper_bound(const key_type& testElement);  // first element  >  testElement
+	;
+	void clear() {
+		for (auto it = this->begin(); it != this->end();) {
+			key_type key = (*it).first;
+			it++;
+			erase(key);
+		}
+	}
+	;
+	iterator lower_bound(const key_type& testElement) {
+		return find(testElement);
+	}
+	;
+	iterator upper_bound(const key_type& testElement) {
+		iterator it = find(testElement);
+		iterator it2 = it;
+		while (it != end()) {
+			it2++;
+//			cout << "bingooo " << (*it2).first << endl;
+			if (it2 != it) {
+//				cout << "bingo";
+				return it2;
+			}
+		}
+		return end();
+	}
+	;
 	iterator find(const key_type& testElement) {
 		iterator it = this->begin();
 		while (it != this->end()) {
@@ -302,6 +328,7 @@ public:
 		}
 		return it;
 	}
+	;
 
 	iterator begin() {
 		iterator* it = new TrieIterator(&root);
@@ -323,7 +350,7 @@ public:
 	}
 	;
 private:
-	InnerNode root; // attribut der klasse trie
+	InnerNode root;
 
 public:
 
@@ -340,23 +367,6 @@ public:
 
 	InnerNode* getRoot() {
 		return &root;
-	}
-
-	void iterate() {
-		//sildeLeft;
-		//++
-		// treeIterator;
-		//mapIterator;
-		// bei der wurzel anfangen
-		//0. slideLeft bis zum blatt; weg im stack merken
-
-		//1.pops_stack; kindermap zurückgeben, in der der Node liegt, auf den der pointer zeigt,
-		//2.in der map  mapiterator++;
-		//3. zegt der mapiterator auf das ende?
-		//nein -> schritte 0-3 wiederholen
-		//ja->1-3 wiederholen
-		//das ganze solange bis der iterator auf die wurzel zeigt
-
 	}
 
 };
