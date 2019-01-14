@@ -24,57 +24,54 @@ public:
 	typedef basic_string<E> key_type;           // string=basic_string<char>
 	typedef pair<const key_type, T> value_type;
 	typedef T mapped_type;
-private:
-	static int& cnt() {
-		static int counter = 0;
-		return counter;
-	}
+
 
 public:
-//	// The setter uses the fact that val()
-//	// returns a non-const reference,
-//	// so we can assign to it.
-//	static void set_cnt(const int _c) {
-//		cnt() = _c;
-//	}
 
-	// A true getter.
-	// Returns const int&, so we cannot assign to it.
-//	static const int& get_cnt() {
-//		return cnt();
-//	}
-
+/**
+ *  class representing nodes
+ */
 	class Node {
 	public:
 		virtual void printNode(int cnt) = 0;
 	};
-
+/**
+ * class representing leaf nodes
+ */
 	class LeafNode: public Node {
 		typedef T mapped_type;
 
 	private:
 		mapped_type my_value;
 	public:
+		/**
+		 * prints a leaf node
+		 */
 		void printNode(int cnt) {
 
-//			for (int j = 0; j < get_cnt(); ++j) {
 			for (int j = 0; j < cnt; ++j) {
 				cout << ' ';
 			}
 			cout << ':';
 			cout << this->my_value << endl;
 			cout << endl;
-//			set_cnt(0);
 		}
-
+/**
+ * setter for value
+ */
 		void setValue(mapped_type value) {
 			this->my_value = value;
 		}
+		/**
+		 * getter for value
+		 */
 		mapped_type getValue() {
 			return this->my_value;
 		}
 	};
-
+/**
+ * class representing inner nodes
+ */
 	class InnerNode: public Node {
 	private:
 		std::map<E, Node*> childrenMap;
@@ -83,7 +80,9 @@ public:
 		std::map<E, Node*>* getChildrenMap() {
 			return &(this->childrenMap);
 		}
-
+/**
+ * inserts inner node in a trie
+ */
 		LeafNode* insertNode(key_type& word, const T &val) { //key_type basic_string
 			LeafNode* leaf = new LeafNode();
 			if (word.length() == 0) {
@@ -109,45 +108,52 @@ public:
 			}
 			return leaf;
 		}
-
+/**
+ * prints an inner node
+ */
 		void printNode(int cnt) {
 			for (auto i = childrenMap.begin(); i != childrenMap.end(); i++) {
 
 				if (i->first != '\0') {
-//					for (int j = 0; j < get_cnt(); ++j) {
 					for (int j = 0; j < cnt; ++j) {
 						cout << ' ';
 					}
-//					int cnt = get_cnt() + 1;
-//					set_cnt(cnt);
+
 					cout << i->first << endl;
 				}
-//				else {
-//					cout << ' ';
-//				}
+
 				i->second->printNode(cnt + 1);
 			}
 		}
 	};
-
+/**
+ * iterator for tries
+ */
 	class TrieIterator {
 		typedef TrieIterator iterator;
 		typedef std::pair<key_type, LeafNode*> return_t;
 		LeafNode* leafNode;
 		key_type key;
 	public:
-
+/**
+ * constructor for iterator
+ */
 		TrieIterator(InnerNode* in) :
 				leafNode(NULL) {
 			setPair(in);
 		}
 		;
+		/**
+		 * constructor for iterator
+		 */
 		TrieIterator(LeafNode* leaf, key_type input_key) {
 			leafNode = leaf;
 			key = input_key;
 		}
 		;
-
+/**
+ * defines leaf node and key for an inner node
+ */
 		void setPair(InnerNode* in) {
 			key = "";
 			if (in != NULL) {
@@ -217,7 +223,9 @@ public:
 		std::list<typename map<E, Node*>::iterator> my_list;
 		std::stack<typename map<E, Node*>::iterator> my_stack;
 		std::stack<typename map<E, Node*>::iterator> my_end;
-
+/**
+ * implements the "slide left leaf" logic
+ */
 		LeafNode* slideLeft(InnerNode* node) {
 			LeafNode* ret = NULL;
 			typename std::map<E, Node*>::iterator it =
@@ -244,7 +252,9 @@ public:
 
 	};
 	typedef TrieIterator iterator;
-
+/**
+ * prints a tree
+ */
 	void print() {
 		root.printNode(0);
 	}
@@ -253,6 +263,9 @@ public:
 		return this->root.childrenMap.empty();
 	}
 	;
+	/**
+	 * erases a node for a given key
+	 */
 	void erase(const key_type& value) {
 		iterator it_pair = find(value);
 		if (it_pair != this->end()) {
@@ -278,6 +291,9 @@ public:
 		}
 	}
 	;
+	/**
+	 * erases a tree
+	 */
 	void clear() {
 		for (auto it = this->begin(); it != this->end();) {
 			key_type key = (*it).first;
@@ -302,6 +318,9 @@ public:
 		return end();
 	}
 	;
+	/**
+	 * find a node for a given key
+	 */
 	iterator find(const key_type& testElement) {
 		iterator it = this->begin();
 		while (it != this->end()) {
@@ -336,9 +355,11 @@ public:
 private:
 	InnerNode root;
 
-public:
 
 public:
+	/**
+	 * inserts a new node in a tree
+	 */
 	iterator insert(const value_type& value) {
 		key_type key = value.first;
 		key_type keyToRet = key;
@@ -348,7 +369,9 @@ public:
 		return *it;
 	}
 	;
-
+/**
+ * getter for a root
+ */
 	InnerNode* getRoot() {
 		return &root;
 	}
